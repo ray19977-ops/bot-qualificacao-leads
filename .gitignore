@@ -1,0 +1,12 @@
+# Ambiente virtual
+.venv/
+
+# Variáveis de ambiente (chaves de API nunca no repositório — RULES Seção 4)
+.env
+
+# Python
+__pycache__/
+*.pyc
+
+# Logs temporários de teste (TEST_LOG_MODE)
+*.log
