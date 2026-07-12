@@ -24,6 +24,9 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     session_id: str
     reply: str
+    # Resumo estruturado do lead, enviado apenas ao final da conversa —
+    # preenchido pela geração de resumo (CONV-19) e exibido no painel da UI-02
+    resumo: dict | None = None
 
 
 @app.get("/health")

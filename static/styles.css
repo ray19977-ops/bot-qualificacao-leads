@@ -26,6 +26,14 @@ body {
   min-height: 100vh;
 }
 
+.pagina {
+  width: 100%;
+  max-width: 980px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
 .chat {
   width: 100%;
   max-width: 640px;
@@ -34,6 +42,69 @@ body {
   display: flex;
   flex-direction: column;
   background: var(--cor-superficie);
+}
+
+/* Painel de resumo estruturado — visualmente distinto do fluxo de chat
+   (UI-02); fica oculto até o resumo ser gerado ao final da conversa */
+.resumo {
+  width: 320px;
+  flex-shrink: 0;
+  align-self: flex-start;
+  max-height: 100dvh;
+  overflow-y: auto;
+  margin: 18px 0;
+  padding: 16px 18px;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-primaria);
+  border-left: 6px solid var(--cor-primaria);
+  border-radius: var(--raio-balao);
+}
+
+.resumo-titulo {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--cor-primaria);
+}
+
+.resumo-descricao {
+  margin: 4px 0 12px;
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.resumo-campos {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.resumo-campos dt {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cor-primaria);
+}
+
+.resumo-campos dd {
+  margin: 2px 0 0;
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 900px) {
+  .pagina {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .resumo {
+    width: 100%;
+    max-width: 640px;
+    max-height: none;
+    margin: 0 0 18px;
+  }
 }
 
 .chat-cabecalho {

@@ -14,6 +14,25 @@ const mensagens = document.getElementById("mensagens");
 const form = document.getElementById("form-chat");
 const campo = document.getElementById("campo-mensagem");
 const botaoEnviar = document.getElementById("botao-enviar");
+const painelResumo = document.getElementById("painel-resumo");
+const camposResumo = document.getElementById("resumo-campos");
+
+// Exibe o resumo estruturado do lead no painel lateral (UI-02).
+// `resumo` é um objeto {campo: valor} enviado pelo backend ao final
+// da conversa (CONV-19); valores em array são exibidos em linhas.
+function exibirResumo(resumo) {
+  camposResumo.replaceChildren();
+  for (const [nomeCampo, valor] of Object.entries(resumo)) {
+    const termo = document.createElement("dt");
+    termo.textContent = nomeCampo;
+    const definicao = document.createElement("dd");
+    definicao.textContent = Array.isArray(valor)
+      ? valor.join("\n")
+      : String(valor);
+    camposResumo.append(termo, definicao);
+  }
+  painelResumo.hidden = false;
+}
 
 function adicionarMensagem(autor, texto) {
   const balao = document.createElement("div");
@@ -33,8 +52,7 @@ async function enviarMensagem(texto) {
   if (!resposta.ok) {
     throw new Error(`HTTP ${resposta.status}`);
   }
-  const dados = await resposta.json();
-  return dados.reply;
+  return resposta.json();
 }
 
 form.addEventListener("submit", async (evento) => {
@@ -53,9 +71,12 @@ form.addEventListener("submit", async (evento) => {
   digitando.classList.add("mensagem-digitando");
 
   try {
-    const resposta = await enviarMensagem(texto);
+    const dados = await enviarMensagem(texto);
     digitando.classList.remove("mensagem-digitando");
-    digitando.textContent = resposta;
+    digitando.textContent = dados.reply;
+    if (dados.resumo) {
+      exibirResumo(dados.resumo);
+    }
   } catch {
     digitando.classList.remove("mensagem-digitando");
     digitando.textContent = CONFIG.mensagemErroRede;

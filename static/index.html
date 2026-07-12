@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <div class="pagina">
   <main class="chat">
     <header class="chat-cabecalho">
       <div class="chat-avatar" aria-hidden="true">R</div>
@@ -31,6 +32,13 @@
       <button id="botao-enviar" class="chat-enviar" type="submit">Enviar</button>
     </form>
   </main>
+
+  <aside id="painel-resumo" class="resumo" hidden aria-label="Resumo estruturado do lead">
+    <h2 class="resumo-titulo">Resumo do lead</h2>
+    <p class="resumo-descricao">Gerado automaticamente ao final da conversa.</p>
+    <dl id="resumo-campos" class="resumo-campos"></dl>
+  </aside>
+  </div>
 
   <script src="app.js"></script>
 </body>
