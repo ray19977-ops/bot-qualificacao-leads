@@ -15,7 +15,23 @@ MODEL = "claude-haiku-4-5-20251001"
 # Teto de tokens de saída por resposta do bot
 MAX_TOKENS = 1024
 
-_client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
+# Timeout por chamada — RULES.md Seção 6: resposta do bot em menos de 15s
+TIMEOUT_SECONDS = 15.0
+
+# Uma tentativa extra em caso de instabilidade (Arquitetura Seção 7)
+MAX_RETRIES = 1
+
+
+class LLMUnavailableError(Exception):
+    """Chamada ao LLM falhou mesmo após o retry — o chamador deve
+    responder com a mensagem de fallback, nunca expor o erro cru."""
+
+
+_client = anthropic.Anthropic(
+    api_key=config.ANTHROPIC_API_KEY,
+    timeout=TIMEOUT_SECONDS,
+    max_retries=MAX_RETRIES,
+)
 
 
 def complete(
@@ -27,6 +43,8 @@ def complete(
 
     `messages` segue o formato do Messages API:
     [{"role": "user"|"assistant", "content": "..."}, ...]
+
+    Levanta LLMUnavailableError se a chamada falhar após timeout/retry.
     """
     kwargs: dict = {
         "model": MODEL,
@@ -36,7 +54,10 @@ def complete(
     if system is not None:
         kwargs["system"] = system
 
-    response = _client.messages.create(**kwargs)
+    try:
+        response = _client.messages.create(**kwargs)
+    except anthropic.APIError as exc:
+        raise LLMUnavailableError(str(exc)) from exc
     return "".join(
         block.text for block in response.content if block.type == "text"
     )
