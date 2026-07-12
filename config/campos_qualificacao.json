@@ -1,0 +1,61 @@
+{
+  "_comentario": "Campos de qualificação (CONV-02, PRD 3.1.2). Configuração isolada do código Python (Arquitetura Seção 10): adicionar/remover campo é editar apenas este arquivo. 'obrigatorio' = o bot deve tentar coletar; se o lead recusar ou não souber, registra 'registro_se_nao_coletado' e segue sem insistir (RF-02).",
+  "campos": [
+    {
+      "id": "segmento",
+      "nome": "Tipo de negócio / segmento",
+      "descricao": "Tipo de negócio ou segmento do cliente final do lead (ex.: loja de roupas, clínica, restaurante).",
+      "obrigatorio": true,
+      "orientacao_coleta": "Reconheça o que o lead disse e já encadeie a próxima pergunta na mesma resposta. Resposta vaga (ex.: 'uma empresa') aciona desambiguação — nunca repetindo a pergunta com as mesmas palavras.",
+      "registro_se_nao_coletado": "não especificado — lead não detalhou apesar de duas tentativas de esclarecimento"
+    },
+    {
+      "id": "canal",
+      "nome": "Canal desejado",
+      "descricao": "Canal onde o bot/automação será usado: WhatsApp, site ou outro.",
+      "obrigatorio": true,
+      "orientacao_coleta": "Se o lead já mencionou o canal espontaneamente, confirme em vez de perguntar de novo. Se responder 'não sei', aceite e siga sem insistir.",
+      "registro_se_nao_coletado": "a definir"
+    },
+    {
+      "id": "problema_objetivo",
+      "nome": "Problema / objetivo principal",
+      "descricao": "Problema ou objetivo principal que o lead quer resolver com a automação.",
+      "obrigatorio": true,
+      "orientacao_coleta": "Reflita o problema numa frase curta antes de seguir, mostrando que entendeu. Se o pedido parecer fora do escopo típico do freelancer, não julgue em voz alta — sinalize apenas na observação interna de viabilidade (RF-03).",
+      "registro_se_nao_coletado": "não especificado — lead não detalhou apesar de duas tentativas de esclarecimento"
+    },
+    {
+      "id": "orcamento",
+      "nome": "Faixa de orçamento aproximada",
+      "descricao": "Faixa de orçamento que o lead tem em mente, mesmo aproximada.",
+      "obrigatorio": true,
+      "orientacao_coleta": "Pergunte sem ancorar valores. Registre o que for dito sem opinar nem confirmar (nunca 'isso é pouco' ou 'dentro do esperado'). Se o lead preferir não dizer, aceite sem pressionar.",
+      "registro_se_nao_coletado": "não informado — lead preferiu não dizer"
+    },
+    {
+      "id": "prazo",
+      "nome": "Prazo desejado",
+      "descricao": "Prazo desejado pelo lead para o projeto.",
+      "obrigatorio": true,
+      "orientacao_coleta": "Registre o prazo informado sem confirmar viabilidade ('anotado', nunca 'dá pra fazer'). Tentativa de arrancar confirmação de prazo segue o fluxo de pergunta fora de escopo.",
+      "registro_se_nao_coletado": "não informado"
+    },
+    {
+      "id": "volume",
+      "nome": "Volume estimado de atendimentos",
+      "descricao": "Volume estimado de conversas/atendimentos esperado pelo lead (por dia ou semana).",
+      "obrigatorio": true,
+      "orientacao_coleta": "Aceite estimativa aproximada ou 'não sei precisar' sem insistir em número exato.",
+      "registro_se_nao_coletado": "estimativa aberta — lead não soube precisar"
+    },
+    {
+      "id": "contato",
+      "nome": "Dado de contato",
+      "descricao": "Nome do lead + e-mail ou WhatsApp para retorno do freelancer.",
+      "obrigatorio": true,
+      "orientacao_coleta": "É o último campo — sinalize como etapa final. Se vier incompleto, peça especificamente o que falta, sem repetir a pergunta inteira. Após a 2ª tentativa sem sucesso, siga para o resumo sinalizando o contato ausente.",
+      "registro_se_nao_coletado": "não coletado — lead não forneceu contato após duas tentativas"
+    }
+  ]
+}
