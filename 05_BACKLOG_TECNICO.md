@@ -44,7 +44,7 @@ TEST-05), que são requisitos obrigatórios do PRD.
 
 | ID | Tarefa | Descrição clara | Critério de aceite | Dependências | Reaproveitável? | Status |
 |---|---|---|---|---|---|---|
-| UI-01 | Interface de chat básica | Página single-page em HTML/CSS/JS puro (sem build step — Arquitetura Seção 5), com identidade visual isolada em variáveis de configuração/CSS (Arquitetura Seção 10) | Interface carrega em até 3s (RF-07), envia e exibe mensagens do usuário e do bot em ordem | INFRA-03 | sim — tema/identidade visual ajustável por projeto | pendente |
+| UI-01 | Interface de chat básica | Página single-page em HTML/CSS/JS puro (sem build step — Arquitetura Seção 5), com identidade visual isolada em variáveis de configuração/CSS (Arquitetura Seção 10) | Interface carrega em até 3s (RF-07), envia e exibe mensagens do usuário e do bot em ordem | INFRA-03 | sim — tema/identidade visual ajustável por projeto | concluido |
 | UI-02 | Área de resumo estruturado | Criar área separada, na mesma tela, para exibir o resumo estruturado ao freelancer ao final da conversa (Arquitetura Seção 4, passo 8, conforme validado no Gate 1) | Ao final de uma conversa de teste, o resumo aparece em painel visualmente distinto do fluxo de chat, na mesma página | UI-01 | sim | pendente |
 | UI-03 | Conexão interface com backend | Frontend gera `session_id` ao carregar a página e envia `POST /chat` com `session_id` + texto a cada mensagem (Arquitetura Seção 4, passos 1–3) | Histórico da conversa persiste visualmente durante a sessão ativa do navegador (RF-07); reload gera novo `session_id` | UI-01, INFRA-05 | sim | pendente |
 

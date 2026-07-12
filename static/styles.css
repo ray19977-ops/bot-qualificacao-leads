@@ -1,0 +1,144 @@
+/* Identidade visual do projeto — ajustável por cliente sem tocar no
+   restante do CSS (Arquitetura Seção 10). Troque apenas estas variáveis. */
+:root {
+  --cor-primaria: #1f6f5c;        /* cabeçalho e mensagens do bot (destaques) */
+  --cor-primaria-escura: #17553f; /* hover do botão */
+  --cor-fundo: #f2f4f3;           /* fundo da página */
+  --cor-superficie: #ffffff;      /* cartão do chat e balões do bot */
+  --cor-balao-usuario: #dcebe6;   /* balão das mensagens do usuário */
+  --cor-texto: #1c2321;
+  --cor-texto-invertido: #ffffff;
+  --raio-balao: 14px;
+  --fonte: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--fonte);
+  color: var(--cor-texto);
+  background: var(--cor-fundo);
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.chat {
+  width: 100%;
+  max-width: 640px;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--cor-superficie);
+}
+
+.chat-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--cor-primaria);
+  color: var(--cor-texto-invertido);
+}
+
+.chat-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.chat-titulo {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.chat-subtitulo {
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.chat-mensagens {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mensagem {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: var(--raio-balao);
+  line-height: 1.4;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.mensagem-bot {
+  align-self: flex-start;
+  background: var(--cor-fundo);
+  border-bottom-left-radius: 4px;
+}
+
+.mensagem-usuario {
+  align-self: flex-end;
+  background: var(--cor-balao-usuario);
+  border-bottom-right-radius: 4px;
+}
+
+.mensagem-digitando {
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.chat-form {
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.chat-campo {
+  flex: 1;
+  padding: 10px 14px;
+  font: inherit;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 22px;
+  outline: none;
+}
+
+.chat-campo:focus {
+  border-color: var(--cor-primaria);
+}
+
+.chat-enviar {
+  padding: 10px 20px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--cor-texto-invertido);
+  background: var(--cor-primaria);
+  border: none;
+  border-radius: 22px;
+  cursor: pointer;
+}
+
+.chat-enviar:hover {
+  background: var(--cor-primaria-escura);
+}
+
+.chat-enviar:disabled {
+  opacity: 0.55;
+  cursor: default;
+}

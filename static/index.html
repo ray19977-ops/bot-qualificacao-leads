@@ -4,9 +4,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rai Bot</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Rai Bot</h1>
-  <p>Interface de chat em construção (tarefa UI-01).</p>
+  <main class="chat">
+    <header class="chat-cabecalho">
+      <div class="chat-avatar" aria-hidden="true">R</div>
+      <div>
+        <h1 class="chat-titulo">Rai Bot</h1>
+        <p class="chat-subtitulo">Assistente do Rai — automação de chatbots</p>
+      </div>
+    </header>
+
+    <section id="mensagens" class="chat-mensagens" aria-live="polite" aria-label="Mensagens da conversa"></section>
+
+    <form id="form-chat" class="chat-form" autocomplete="off">
+      <input
+        id="campo-mensagem"
+        class="chat-campo"
+        type="text"
+        placeholder="Escreva sua mensagem…"
+        aria-label="Sua mensagem"
+        maxlength="1000"
+        required
+      >
+      <button id="botao-enviar" class="chat-enviar" type="submit">Enviar</button>
+    </form>
+  </main>
+
+  <script src="app.js"></script>
 </body>
 </html>
