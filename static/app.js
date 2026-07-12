@@ -5,10 +5,21 @@ const CONFIG = {
   nomeBot: "Rai Bot",
   mensagemErroRede:
     "Não consegui enviar sua mensagem agora. Confira sua conexão e tente de novo.",
-  // Placeholder — a UI-03 passa a gerar um session_id novo a cada
-  // carregamento da página (Arquitetura Seção 4, passos 1–3)
-  sessionId: "ui-01-placeholder",
 };
+
+// Um session_id novo a cada carregamento da página (Arquitetura Seção 4,
+// passos 1–3): recarregar inicia conversa nova; o histórico vive só no
+// backend em memória (INFRA-05) e no DOM durante a sessão ativa.
+// crypto.randomUUID exige contexto seguro (https/localhost); o fallback
+// cobre acesso via IP da rede local, ex. teste multi-dispositivo.
+function gerarSessionId() {
+  if (window.crypto && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `sessao-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+const sessionId = gerarSessionId();
 
 const mensagens = document.getElementById("mensagens");
 const form = document.getElementById("form-chat");
@@ -47,7 +58,7 @@ async function enviarMensagem(texto) {
   const resposta = await fetch("/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ session_id: CONFIG.sessionId, message: texto }),
+    body: JSON.stringify({ session_id: sessionId, message: texto }),
   });
   if (!resposta.ok) {
     throw new Error(`HTTP ${resposta.status}`);
