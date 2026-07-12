@@ -1,9 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from app import config  # valida as variáveis de ambiente na subida do app
-from app import llm_client, session_store
+from app import conversa, llm_client, session_store
 
 app = FastAPI(title="Rai Bot")
 
@@ -34,18 +34,19 @@ def health() -> dict:
     return {"status": "ok"}
 
 
-def _generate_reply(history: list[dict]) -> str:
-    # Stub — passa a chamar llm_client.complete(history) quando a
-    # lógica conversacional (Bloco 3) for conectada
-    return "[stub] Recebi sua mensagem. A lógica conversacional ainda não foi conectada."
-
-
 @app.post("/chat")
 def chat(request: ChatRequest) -> ChatResponse:
-    session_store.append_message(request.session_id, "user", request.message)
+    mensagem = request.message.strip()
+    if not mensagem:
+        if session_store.get_history(request.session_id):
+            raise HTTPException(status_code=422, detail="mensagem vazia")
+        # Sessão nova sem texto: o frontend está pedindo a abertura (INT-01)
+        mensagem = conversa.GATILHO_ABERTURA
+
+    session_store.append_message(request.session_id, "user", mensagem)
 
     try:
-        reply = _generate_reply(session_store.get_history(request.session_id))
+        reply = conversa.responder(session_store.get_history(request.session_id))
     except llm_client.LLMUnavailableError:
         reply = FALLBACK_MESSAGE
 

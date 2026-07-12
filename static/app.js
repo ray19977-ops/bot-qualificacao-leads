@@ -99,4 +99,20 @@ form.addEventListener("submit", async (evento) => {
   }
 });
 
+// Ao carregar a página, pede a mensagem de abertura ao backend (INT-01):
+// enviar texto vazio numa sessão nova dispara a abertura gerada pelo LLM
+async function solicitarAbertura() {
+  const digitando = adicionarMensagem("bot", "digitando…");
+  digitando.classList.add("mensagem-digitando");
+  try {
+    const dados = await enviarMensagem("");
+    digitando.textContent = dados.reply;
+  } catch {
+    digitando.textContent = CONFIG.mensagemErroRede;
+  } finally {
+    digitando.classList.remove("mensagem-digitando");
+  }
+}
+
+solicitarAbertura();
 campo.focus();
