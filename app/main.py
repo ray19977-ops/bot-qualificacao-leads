@@ -50,8 +50,22 @@ def chat(request: ChatRequest) -> ChatResponse:
     except llm_client.LLMUnavailableError:
         reply = FALLBACK_MESSAGE
 
-    session_store.append_message(request.session_id, "assistant", reply)
-    return ChatResponse(session_id=request.session_id, reply=reply)
+    # Fim da qualificação: remove o marcador técnico do texto exibido e
+    # gera o resumo estruturado ao freelancer (CONV-19 / RF-03 / RF-05)
+    resumo = None
+    if conversa.MARCADOR_FIM in reply:
+        reply = reply.replace(conversa.MARCADOR_FIM, "").strip()
+        session_store.append_message(request.session_id, "assistant", reply)
+        try:
+            resumo = conversa.gerar_resumo_estruturado(
+                session_store.get_history(request.session_id)
+            )
+        except llm_client.LLMUnavailableError:
+            resumo = None  # o lead não é afetado; o resumo fica indisponível
+    else:
+        session_store.append_message(request.session_id, "assistant", reply)
+
+    return ChatResponse(session_id=request.session_id, reply=reply, resumo=resumo)
 
 
 # Montado por último para não sobrepor /health e /chat

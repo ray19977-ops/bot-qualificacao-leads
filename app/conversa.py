@@ -23,6 +23,11 @@ _MARCADOR_CAMPOS = "{{CAMPOS_QUALIFICACAO}}"
 # prompt instrui o bot a gerar a mensagem de boas-vindas ao recebê-lo.
 GATILHO_ABERTURA = "[INICIAR_CONVERSA]"
 
+# O system prompt instrui o bot a terminar com este marcador a resposta
+# que encerra a qualificação. O backend o remove do texto exibido e o
+# usa como gatilho da geração do resumo estruturado (CONV-19).
+MARCADOR_FIM = "[FIM_QUALIFICACAO]"
+
 
 def _renderizar_campos() -> str:
     dados = json.loads(_CAMINHO_CAMPOS.read_text(encoding="utf-8"))
@@ -49,3 +54,140 @@ def responder(historico: list[dict]) -> str:
     indisponível — o chamador responde com a mensagem de fallback.
     """
     return llm_client.complete(historico, system=carregar_system_prompt())
+
+
+def _tool_resumo() -> dict:
+    """Monta a tool de resumo estruturado a partir do JSON de campos.
+
+    Schema dinâmico: adicionar/remover campo em campos_qualificacao.json
+    muda o resumo sem tocar em código (critério da CONV-02).
+    """
+    campos = json.loads(_CAMINHO_CAMPOS.read_text(encoding="utf-8"))["campos"]
+    properties = {
+        campo["id"]: {
+            "type": "string",
+            "description": (
+                f"{campo['nome']}: {campo['descricao']} "
+                f"Se não coletado, use exatamente: \"{campo['registro_se_nao_coletado']}\""
+            ),
+        }
+        for campo in campos
+    }
+    properties["observacao_viabilidade"] = {
+        "type": "string",
+        "description": (
+            "Observação interna de fit/viabilidade (RF-03), SEMPRE "
+            "preenchida: o pedido parece dentro do escopo típico de "
+            "automação de chatbots do freelancer? Sinalize pedidos fora "
+            "do escopo, urgência extrema ou qualquer alerta útil à "
+            "decisão humana."
+        ),
+    }
+    properties["campos_nao_coletados"] = {
+        "type": "array",
+        "description": (
+            "OBRIGATÓRIO: um item para CADA campo acima cujo valor "
+            "ficou com o texto padrão de não coletado (ex.: 'não "
+            "informado', 'a definir', 'não especificado'), repetindo o "
+            "campo e o motivo (ex.: 'lead não quis informar', 'conversa "
+            "encerrada antes desta etapa'). Lista vazia SOMENTE se todos "
+            "os campos foram efetivamente coletados."
+        ),
+        "items": {
+            "type": "object",
+            "properties": {
+                "campo": {"type": "string"},
+                "motivo": {"type": "string"},
+            },
+            "required": ["campo", "motivo"],
+        },
+    }
+    properties["observacoes_livres"] = {
+        "type": "string",
+        "description": (
+            "Observações úteis ao freelancer: lead insistiu em "
+            "preço/prazo, pediu atendimento humano, dúvidas fora de "
+            "escopo a responder no retorno etc. String vazia se nada."
+        ),
+    }
+    ids_campos = [campo["id"] for campo in campos]
+    return {
+        "name": "registrar_resumo_lead",
+        "description": (
+            "Registra o resumo estruturado interno da qualificação para "
+            "o freelancer. Nunca é mostrado ao lead."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": properties,
+            "required": ids_campos + ["observacao_viabilidade", "campos_nao_coletados"],
+        },
+    }, campos
+
+
+def gerar_resumo_estruturado(historico: list[dict]) -> dict:
+    """Chamada final ao LLM (Arquitetura Seção 4, passo 7): extrai o
+    resumo estruturado da transcrição via tool use e o devolve pronto
+    para exibição no painel do freelancer (UI-02).
+    """
+    tool, campos = _tool_resumo()
+    mensagens = historico + [
+        {
+            "role": "user",
+            "content": (
+                "[INSTRUÇÃO INTERNA] Gere agora o resumo estruturado da "
+                "conversa acima usando a ferramenta registrar_resumo_lead. "
+                "Preencha com honestidade: campo não coletado recebe o "
+                "texto padrão e entra em campos_nao_coletados com motivo."
+            ),
+        }
+    ]
+    dados = llm_client.extract_structured(
+        mensagens,
+        tool=tool,
+        system=(
+            "Você é o registrador interno de leads do freelancer Rai. "
+            "Extraia da transcrição os dados pedidos pela ferramenta, "
+            "sem inventar informação que o lead não deu."
+        ),
+    )
+
+    # Achata para o formato {rótulo: texto} que o painel da UI-02 exibe
+    resumo = {
+        campo["nome"]: dados.get(campo["id"]) or campo["registro_se_nao_coletado"]
+        for campo in campos
+    }
+    resumo["Observação de viabilidade"] = dados.get(
+        "observacao_viabilidade", "não preenchida"
+    )
+
+    # Campos não coletados nunca são omitidos (RF-02). A lista é derivada
+    # no código — campo cujo valor ficou no texto padrão de não coletado —
+    # e complementada pelo que o modelo apontar em campos_nao_coletados.
+    faltantes = [
+        campo
+        for campo in campos
+        if resumo[campo["nome"]] == campo["registro_se_nao_coletado"]
+    ]
+    nao_coletados = [
+        f"{campo['nome']}: {campo['registro_se_nao_coletado']}" for campo in faltantes
+    ]
+    # O modelo referencia campos ora pelo id ("orcamento"), ora pelo nome
+    ja_sinalizados = {campo["id"].lower() for campo in faltantes} | {
+        campo["nome"].lower() for campo in faltantes
+    }
+    for item in dados.get("campos_nao_coletados") or []:
+        nome_item = str(item.get("campo", "?")).lower()
+        if not any(
+            nome_item in conhecido or conhecido in nome_item
+            for conhecido in ja_sinalizados
+        ):
+            nao_coletados.append(
+                f"{item.get('campo', '?')}: {item.get('motivo', 'motivo não informado')}"
+            )
+    if nao_coletados:
+        resumo["Campos não coletados"] = nao_coletados
+
+    if dados.get("observacoes_livres"):
+        resumo["Observações"] = dados["observacoes_livres"]
+    return resumo
