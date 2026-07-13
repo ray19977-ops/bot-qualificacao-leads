@@ -7,6 +7,10 @@ sessões, por decisão de arquitetura (RULES.md, Seção 3: "Sem banco").
 
 _sessions: dict[str, list[dict]] = {}
 
+# Sessões encerradas pelo teto de turnos (CONV-21) — mensagens novas
+# nessas sessões recebem a resposta padrão de encerramento, sem reabrir
+_encerradas: set[str] = set()
+
 
 def append_message(session_id: str, role: str, content: str) -> None:
     """Acrescenta uma mensagem ao histórico da sessão, criando-a se necessário.
@@ -26,6 +30,16 @@ def get_history(session_id: str) -> list[dict]:
     return list(_sessions.get(session_id, []))
 
 
+def marcar_encerrada(session_id: str) -> None:
+    """Marca a sessão como encerrada — novas mensagens não a reabrem."""
+    _encerradas.add(session_id)
+
+
+def esta_encerrada(session_id: str) -> bool:
+    return session_id in _encerradas
+
+
 def clear_session(session_id: str) -> None:
-    """Descarta o histórico de uma sessão encerrada."""
+    """Descarta o histórico e o estado de uma sessão encerrada."""
     _sessions.pop(session_id, None)
+    _encerradas.discard(session_id)
