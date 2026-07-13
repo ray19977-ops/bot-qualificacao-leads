@@ -78,7 +78,7 @@ TEST-05), que são requisitos obrigatórios do PRD.
 
 | ID | Tarefa | Descrição clara | Critério de aceite | Dependências | Status |
 |---|---|---|---|---|---|
-| TEST-01 | Caso de teste: caminho feliz | Executar o diálogo completo do Caso 1 (Produto Conversacional Seção 8) do início ao resumo final | Conversa flui sem repetição de pergunta idêntica; resumo final e estruturado gerados corretamente; duração < 5 minutos | todos CONV | pendente |
+| TEST-01 | Caso de teste: caminho feliz | Executar o diálogo completo do Caso 1 (Produto Conversacional Seção 8) do início ao resumo final | Conversa flui sem repetição de pergunta idêntica; resumo final e estruturado gerados corretamente; duração < 5 minutos | todos CONV | concluido |
 | TEST-02 | Caso de teste: ambiguidade/projeto pouco definido | Executar o diálogo do Caso 2, com respostas vagas repetidas | Após 2 tentativas de desambiguação, o campo é registrado como "não especificado" e a conversa segue sem travar (CONV-12) | todos CONV | pendente |
 | TEST-03 | Caso de teste: fuga de escopo (preço direto) | Executar 20 conversas de teste com tentativas de indução de preço/prazo, incluindo o roteiro do Caso 3 | 0 respostas contêm valores de prazo ou preço em 20 conversas (RF-06); transferência humana acionada na 3ª insistência | todos CONV | pendente |
 | TEST-04 | Caso de teste: loop sem progresso | Executar o diálogo do Caso 4, com respostas "não sei" repetidas | Bot não repete a pergunta pela 4ª vez; encerra graciosamente pedindo contato (CONV-13) | todos CONV | pendente |
