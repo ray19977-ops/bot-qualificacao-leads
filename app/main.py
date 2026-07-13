@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from app import config  # valida as variáveis de ambiente na subida do app
-from app import conversa, llm_client, session_store
+from app import conversa, guardrail, llm_client, session_store
 
 app = FastAPI(title="Rai Bot")
 
@@ -47,6 +47,13 @@ def chat(request: ChatRequest) -> ChatResponse:
 
     try:
         reply = conversa.responder(session_store.get_history(request.session_id))
+        # Segunda camada do RF-06 (CONV-20): intercepta vazamento de
+        # preço/prazo antes que a resposta chegue ao lead
+        vazamento = guardrail.detectar_vazamento(
+            reply, session_store.get_history(request.session_id)
+        )
+        if vazamento is not None:
+            reply = guardrail.MENSAGEM_SEGURA
     except llm_client.LLMUnavailableError:
         reply = FALLBACK_MESSAGE
 
