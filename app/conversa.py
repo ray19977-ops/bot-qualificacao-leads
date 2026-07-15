@@ -209,8 +209,13 @@ def gerar_resumo_estruturado(historico: list[dict]) -> dict:
             "content": (
                 "[INSTRUÇÃO INTERNA] Gere agora o resumo estruturado da "
                 "conversa acima usando a ferramenta registrar_resumo_lead. "
-                "Preencha com honestidade: campo não coletado recebe o "
-                "texto padrão e entra em campos_nao_coletados com motivo."
+                "Preencha cada campo SOMENTE com o que o lead disse "
+                "explicitamente: exemplos ou sugestões que o assistente "
+                "citou nas próprias perguntas NÃO contam como resposta do "
+                "lead. Campo sem resposta clara do lead (resposta vaga, "
+                "mudança de assunto, pedido de humano antes de responder) "
+                "recebe o texto padrão de não coletado e entra em "
+                "campos_nao_coletados com motivo."
             ),
         }
     ]
@@ -219,8 +224,16 @@ def gerar_resumo_estruturado(historico: list[dict]) -> dict:
         tool=tool,
         system=(
             "Você é o registrador interno de leads do freelancer Rai. "
-            "Extraia da transcrição os dados pedidos pela ferramenta, "
-            "sem inventar informação que o lead não deu."
+            "Extraia da transcrição os dados pedidos pela ferramenta com "
+            "fidelidade literal ao que o LEAD disse. Regra crítica: "
+            "exemplos, sugestões ou hipóteses que o assistente citou nas "
+            "próprias perguntas (ex.: 'seria reduzir perguntas repetidas, "
+            "ou tem outro foco?') não são dados do lead — nunca use esse "
+            "conteúdo para preencher um campo, mesmo que o lead não o "
+            "tenha negado. Se o lead não respondeu um campo de forma "
+            "clara, use exatamente o texto padrão de não coletado daquele "
+            "campo. Nunca deduza nem complete informação que o lead não "
+            "deu."
         ),
     )
 
