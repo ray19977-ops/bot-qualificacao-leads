@@ -5,6 +5,8 @@ O conteúdo do prompt vive em config/system_prompt.md (Arquitetura Seção
 """
 
 import json
+import re
+import unicodedata
 from pathlib import Path
 
 from app import llm_client
@@ -27,6 +29,64 @@ GATILHO_ABERTURA = "[INICIAR_CONVERSA]"
 # que encerra a qualificação. O backend o remove do texto exibido e o
 # usa como gatilho da geração do resumo estruturado (CONV-19).
 MARCADOR_FIM = "[FIM_QUALIFICACAO]"
+
+# Reforço determinístico da CONV-13 (CONV-22): o Haiku 4.5 não sustenta
+# a contagem de estagnação entre turnos só pela regra do prompt, então o
+# código conta as mensagens finais consecutivas do lead sem informação
+# nova e injeta a instrução de encerramento na chamada ao LLM. Cobre as
+# formas comuns de estagnação; variações fora do padrão continuam sob a
+# regra do system prompt.
+_PADRAO_SEM_PROGRESSO = re.compile(
+    r"^(nao sei( dizer| precisar| mesmo| ainda| nao)?|sei la|"
+    r"nao tenho ideia|nao faco ideia|tanto faz|qualquer coisa|"
+    r"nem sei|hu?m+)[.!?…\s]*$"
+)
+
+_INSTRUCAO_LOOP_CONTATO = (
+    "[INSTRUÇÃO INTERNA — o lead não vê esta mensagem] Loop sem "
+    "progresso detectado: as últimas 3 mensagens do lead não trouxeram "
+    "informação nova. Pare de qualificar agora: não pergunte por nenhum "
+    "outro campo. Encerre graciosamente, sem fazer o lead se sentir "
+    "mal, pedindo APENAS um e-mail ou WhatsApp para o Rai retomar "
+    "depois. Se o lead já tiver dado o contato antes, confirme o que "
+    "você tem, encerre de vez e termine a resposta com o marcador "
+    "[FIM_QUALIFICACAO] sozinho na última linha."
+)
+
+_INSTRUCAO_LOOP_ENCERRAR = (
+    "[INSTRUÇÃO INTERNA — o lead não vê esta mensagem] O lead segue sem "
+    "trazer informação nova mesmo após o pedido de contato. Encerre a "
+    "conversa de vez, educadamente, sem pedir mais nada, e OBRIGATORIAMENTE "
+    "termine a resposta com o marcador [FIM_QUALIFICACAO] sozinho na "
+    "última linha."
+)
+
+
+def _sem_informacao_nova(texto: str) -> bool:
+    normalizado = unicodedata.normalize("NFD", texto.strip().lower())
+    normalizado = "".join(
+        c for c in normalizado if unicodedata.category(c) != "Mn"
+    )
+    return bool(_PADRAO_SEM_PROGRESSO.match(normalizado))
+
+
+def contar_estagnacao(historico: list[dict]) -> int:
+    """Conta as mensagens finais consecutivas do lead sem informação nova.
+
+    Percorre o histórico do fim para o início considerando apenas as
+    mensagens do lead; a primeira que trouxer informação real (ou o
+    gatilho de abertura) zera a sequência.
+    """
+    contagem = 0
+    for mensagem in reversed(historico):
+        if mensagem["role"] != "user":
+            continue
+        if mensagem["content"] == GATILHO_ABERTURA:
+            break
+        if not _sem_informacao_nova(mensagem["content"]):
+            break
+        contagem += 1
+    return contagem
 
 
 def _renderizar_campos() -> str:
@@ -53,7 +113,19 @@ def responder(historico: list[dict]) -> str:
     Levanta LLMUnavailableError (via llm_client) se o modelo estiver
     indisponível — o chamador responde com a mensagem de fallback.
     """
-    return llm_client.complete(historico, system=carregar_system_prompt())
+    mensagens = historico
+    estagnacao = contar_estagnacao(historico)
+    if estagnacao == 3:
+        # A instrução interna não é persistida na sessão: só entra na
+        # chamada ao LLM, como já faz gerar_resumo_estruturado
+        mensagens = historico + [
+            {"role": "user", "content": _INSTRUCAO_LOOP_CONTATO}
+        ]
+    elif estagnacao >= 4:
+        mensagens = historico + [
+            {"role": "user", "content": _INSTRUCAO_LOOP_ENCERRAR}
+        ]
+    return llm_client.complete(mensagens, system=carregar_system_prompt())
 
 
 def _tool_resumo() -> dict:
