@@ -62,6 +62,23 @@ _INSTRUCAO_LOOP_ENCERRAR = (
 )
 
 
+# Rede de segurança do RF-05 (CONV-24): o modelo omite o marcador de fim
+# em parte dos fechamentos (~18% na amostra do TEST-03). Assinaturas
+# conservadoras das mensagens de encerramento; fraseados fora do padrão
+# continuam cobertos pela regra do marcador no system prompt.
+_PADRAO_FECHAMENTO = re.compile(
+    r"recapitulando"
+    r"|obrigad[oa] pelo (?:seu )?tempo"
+    r"|acrescentar antes de (?:eu )?(?:fechar|encerrar)",
+    re.IGNORECASE,
+)
+
+
+def parece_fechamento(resposta: str) -> bool:
+    """Reconhece uma mensagem de encerramento que veio sem o marcador."""
+    return bool(_PADRAO_FECHAMENTO.search(resposta))
+
+
 def _sem_informacao_nova(texto: str) -> bool:
     normalizado = unicodedata.normalize("NFD", texto.strip().lower())
     normalizado = "".join(

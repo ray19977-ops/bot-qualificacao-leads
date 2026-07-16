@@ -126,6 +126,15 @@ def chat(request: ChatRequest) -> ChatResponse:
             resumo = None  # o lead não é afetado; o resumo fica indisponível
     else:
         session_store.append_message(request.session_id, "assistant", reply)
+        # Rede de segurança do RF-05 (CONV-24): fechamento em que o modelo
+        # omitiu o marcador — gera o resumo estruturado mesmo assim
+        if conversa.parece_fechamento(reply):
+            try:
+                resumo = conversa.gerar_resumo_estruturado(
+                    session_store.get_history(request.session_id)
+                )
+            except llm_client.LLMUnavailableError:
+                resumo = None
 
     return ChatResponse(session_id=request.session_id, reply=reply, resumo=resumo)
 
