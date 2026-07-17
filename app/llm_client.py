@@ -27,6 +27,25 @@ class LLMUnavailableError(Exception):
     responder com a mensagem de fallback, nunca expor o erro cru."""
 
 
+def _system_cacheavel(system: str) -> list[dict]:
+    """Envolve o system prompt em um bloco com prompt caching (CONV-25).
+
+    O cache é por prefixo (tools → system → messages): o marcador no
+    bloco de system reaproveita tools + system entre as chamadas de uma
+    mesma conversa, cobrando ~10% do preço de entrada no que for lido do
+    cache (TTL de 5 min). Prefixos abaixo do mínimo do modelo (4096
+    tokens no Haiku 4.5, caso da chamada de resumo) simplesmente não
+    cacheiam, sem erro nem mudança de comportamento.
+    """
+    return [
+        {
+            "type": "text",
+            "text": system,
+            "cache_control": {"type": "ephemeral"},
+        }
+    ]
+
+
 _client = anthropic.Anthropic(
     api_key=config.ANTHROPIC_API_KEY,
     timeout=TIMEOUT_SECONDS,
@@ -52,7 +71,7 @@ def complete(
         "messages": messages,
     }
     if system is not None:
-        kwargs["system"] = system
+        kwargs["system"] = _system_cacheavel(system)
 
     try:
         response = _client.messages.create(**kwargs)
@@ -85,7 +104,7 @@ def extract_structured(
         "tool_choice": {"type": "tool", "name": tool["name"]},
     }
     if system is not None:
-        kwargs["system"] = system
+        kwargs["system"] = _system_cacheavel(system)
 
     try:
         response = _client.messages.create(**kwargs)
