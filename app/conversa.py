@@ -9,7 +9,10 @@ import re
 import unicodedata
 from pathlib import Path
 
-from app import llm_client
+from app import identidade, llm_client
+
+_NOME_FREELANCER = identidade.IDENTIDADE["nome_freelancer"]
+_DESCRICAO_SERVICO = identidade.IDENTIDADE["descricao_servico"]
 
 _RAIZ = Path(__file__).resolve().parent.parent
 _CAMINHO_SYSTEM_PROMPT = _RAIZ / "config" / "system_prompt.md"
@@ -47,8 +50,8 @@ _INSTRUCAO_LOOP_CONTATO = (
     "progresso detectado: as últimas 3 mensagens do lead não trouxeram "
     "informação nova. Pare de qualificar agora: não pergunte por nenhum "
     "outro campo. Encerre graciosamente, sem fazer o lead se sentir "
-    "mal, pedindo APENAS um e-mail ou WhatsApp para o Rai retomar "
-    "depois. Se o lead já tiver dado o contato antes, confirme o que "
+    f"mal, pedindo APENAS um e-mail ou WhatsApp para o {_NOME_FREELANCER} "
+    "retomar depois. Se o lead já tiver dado o contato antes, confirme o que "
     "você tem, encerre de vez e termine a resposta com o marcador "
     "[FIM_QUALIFICACAO] sozinho na última linha."
 )
@@ -167,7 +170,7 @@ def _tool_resumo() -> dict:
         "description": (
             "Observação interna de fit/viabilidade (RF-03), SEMPRE "
             "preenchida: o pedido parece dentro do escopo típico de "
-            "automação de chatbots do freelancer? Sinalize pedidos fora "
+            f"{_DESCRICAO_SERVICO} do freelancer? Sinalize pedidos fora "
             "do escopo, urgência extrema ou qualquer alerta útil à "
             "decisão humana."
         ),
@@ -240,7 +243,8 @@ def gerar_resumo_estruturado(historico: list[dict]) -> dict:
         mensagens,
         tool=tool,
         system=(
-            "Você é o registrador interno de leads do freelancer Rai. "
+            f"Você é o registrador interno de leads do freelancer "
+            f"{_NOME_FREELANCER}. "
             "Extraia da transcrição os dados pedidos pela ferramenta com "
             "fidelidade literal ao que o LEAD disse. Regra crítica: "
             "exemplos, sugestões ou hipóteses que o assistente citou nas "

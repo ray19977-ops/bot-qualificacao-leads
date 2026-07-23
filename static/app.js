@@ -1,11 +1,25 @@
 "use strict";
 
-// Identidade/comportamento configuráveis por cliente (Arquitetura Seção 10)
-const CONFIG = {
-  nomeBot: "Rai Bot",
-  mensagemErroRede:
-    "Não consegui enviar sua mensagem agora. Confira sua conexão e tente de novo.",
-};
+// Identidade configurável por cliente: carregada de GET /config, que lê
+// config/identidade.json no backend (Arquitetura Seção 10). O texto
+// abaixo é só o fallback neutro até (ou se) o /config responder.
+let mensagemErroRede =
+  "Não consegui enviar sua mensagem agora. Confira sua conexão e tente de novo.";
+
+async function aplicarIdentidade() {
+  try {
+    const resposta = await fetch("/config");
+    if (!resposta.ok) return;
+    const cfg = await resposta.json();
+    document.title = cfg.nome_bot;
+    document.getElementById("chat-titulo").textContent = cfg.nome_bot;
+    document.getElementById("chat-subtitulo").textContent = cfg.subtitulo;
+    document.getElementById("chat-avatar").textContent = cfg.letra_avatar;
+    mensagemErroRede = cfg.erro_rede;
+  } catch {
+    // Sem /config a página segue com os textos neutros do HTML
+  }
+}
 
 // Um session_id novo a cada carregamento da página (Arquitetura Seção 4,
 // passos 1–3): recarregar inicia conversa nova; o histórico vive só no
@@ -90,7 +104,7 @@ form.addEventListener("submit", async (evento) => {
     }
   } catch {
     digitando.classList.remove("mensagem-digitando");
-    digitando.textContent = CONFIG.mensagemErroRede;
+    digitando.textContent = mensagemErroRede;
   } finally {
     campo.disabled = false;
     botaoEnviar.disabled = false;
@@ -108,11 +122,12 @@ async function solicitarAbertura() {
     const dados = await enviarMensagem("");
     digitando.textContent = dados.reply;
   } catch {
-    digitando.textContent = CONFIG.mensagemErroRede;
+    digitando.textContent = mensagemErroRede;
   } finally {
     digitando.classList.remove("mensagem-digitando");
   }
 }
 
+aplicarIdentidade();
 solicitarAbertura();
 campo.focus();

@@ -1,0 +1,20 @@
+{
+  "_comentario": "Identidade, mensagens fixas e parâmetros operacionais do bot (ENTREGA-01, Arquitetura Seção 10). Trocar de cliente é editar apenas este arquivo (e os demais de config/), sem tocar em código; exige reiniciar o servidor. Os textos de 'mensagens' aceitam os placeholders {nome_bot}, {nome_freelancer}, {subtitulo}, {letra_avatar} e {descricao_servico}.",
+  "identidade": {
+    "nome_bot": "Rai Bot",
+    "nome_freelancer": "Rai",
+    "subtitulo": "Assistente do Rai — automação de chatbots",
+    "letra_avatar": "R",
+    "descricao_servico": "automação de chatbots"
+  },
+  "mensagens": {
+    "fallback": "Tive uma instabilidade técnica aqui do meu lado. Pode reenviar sua última mensagem em alguns instantes? Se preferir, deixe seu nome e e-mail ou WhatsApp que o {nome_freelancer} entra em contato com você.",
+    "limite_turnos": "A gente já trocou bastante mensagem por aqui, então vou fechar esta conversa pra não tomar mais o seu tempo. Tudo o que você me contou já vai organizado pro {nome_freelancer} dar continuidade — se você deixou um contato, ele te retorna por lá; se não, é só voltar aqui pra retomar numa nova conversa. Obrigado pelo papo!",
+    "sessao_encerrada": "Esta conversa já foi encerrada e o que você me contou seguiu pro {nome_freelancer}. Pra começar uma conversa nova, é só recarregar a página. Obrigado!",
+    "guardrail_segura": "Sobre valores e prazos, quem consegue te responder com precisão é o {nome_freelancer}, olhando o projeto todo — prefiro não te passar um número que depois pode não se confirmar. Ele te retorna com tudo certinho pelo contato que você deixar aqui. Vamos seguir?",
+    "erro_rede": "Não consegui enviar sua mensagem agora. Confira sua conexão e tente de novo."
+  },
+  "parametros": {
+    "limite_turnos": 20
+  }
+}

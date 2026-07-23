@@ -11,13 +11,8 @@ padrões de promessa abaixo.
 
 import re
 
-# Resposta substituta quando um vazamento é interceptado
-MENSAGEM_SEGURA = (
-    "Sobre valores e prazos, quem consegue te responder com precisão é "
-    "o Rai, olhando o projeto todo — prefiro não te passar um número "
-    "que depois pode não se confirmar. Ele te retorna com tudo certinho "
-    "pelo contato que você deixar aqui. Vamos seguir?"
-)
+# A resposta substituta quando um vazamento é interceptado vive em
+# config/identidade.json ("guardrail_segura") — este módulo só detecta.
 
 _DINHEIRO = re.compile(
     r"R\$\s*\d[\d.,]*|\b\d[\d.,]*\s*(?:mil\s+)?(?:reais|conto)\b",
